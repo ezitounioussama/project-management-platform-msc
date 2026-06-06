@@ -137,6 +137,9 @@ export function Component({ name, email }: ComponentProps) {
 }
 ```
 
+## Protected Files
+- **`opencode.json`** — Do NOT modify, commit, or push this file. It contains MCP configuration for the AI toolchain and must remain untouched by any agent.
+
 ## Git Workflow
 - Feature branches: `feat/<name>`
 - Commits: conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`)
