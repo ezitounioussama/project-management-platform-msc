@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { useAppStore } from '@/store/app-store';
 import { TopBar } from '@/components/layout/TopBar';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { ToasterProvider } from '@/components/ui/ToasterProvider';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const colorScheme = useAuthStore((s) => s.colorScheme);
@@ -25,6 +26,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Sidebar />
         <MantineShell.Main>{children}</MantineShell.Main>
       </MantineShell>
+      <ToasterProvider />
     </MantineProvider>
   );
 }

@@ -15,6 +15,10 @@ Project Management Platform (Mini Jira/Trello clone). A full-featured agile proj
 | Charts | Recharts v3.8.1 + @mantine/charts |
 | Dates | dayjs v1.11.21 + @mantine/dates |
 | Icons | @tabler/icons-react |
+| Toasts | react-hot-toast |
+| Database | MongoDB 8 (Docker) |
+| GUI | Mongo Express (Docker) |
+| Container | Docker + Compose |
 | Real-time | Socket.io (future) |
 
 ## Directory Structure
@@ -24,6 +28,7 @@ src/
 ├── app/                          # Next.js App Router pages
 │   ├── layout.tsx                # Root layout with AppShell + MantineProvider
 │   ├── page.tsx                  # "For you" dashboard
+│   ├── not-found.tsx             # Custom 404 page
 │   ├── globals.css               # Tailwind + custom theme
 │   ├── projects/
 │   │   ├── page.tsx              # Browse all projects
@@ -44,7 +49,8 @@ src/
 │   ├── ui/                       # Small reusable UI components
 │   │   ├── UserMenu.tsx
 │   │   ├── NotificationBell.tsx
-│   │   └── CreateButton.tsx
+│   │   ├── CreateButton.tsx
+│   │   └── ToasterProvider.tsx
 │   ├── board/                    # Board-related components
 │   ├── issue/                    # Issue-related components
 │   └── project/                  # Project-related components
@@ -105,6 +111,7 @@ src/
 - Use **CSS modules** or Mantine `style` prop for component-specific styles.
 - Prefer Mantine's `AppShell` for the main layout shell.
 - Prefetch data in server components where possible; use `'use client'` only when needed.
+- Custom 404 pages must be `'use client'` to use Mantine components.
 
 ### TypeScript
 - Strict mode enabled.
@@ -144,6 +151,17 @@ export function Component({ name, email }: ComponentProps) {
 - Feature branches: `feat/<name>`
 - Commits: conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`)
 - No direct pushes to `main` without PR
+
+## Docker
+```bash
+docker compose up -d          # Start full stack (app + MongoDB + Mongo Express)
+docker compose down           # Stop all containers
+docker compose down -v        # Stop and delete volumes (clears DB)
+docker compose logs -f        # Follow container logs
+docker compose build          # Rebuild images
+```
+
+Mongo Express available at http://localhost:8081 (login: `admin` / `admin`).
 
 ## Build & Verify
 ```bash

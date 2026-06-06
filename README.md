@@ -2,7 +2,7 @@
 
 > Plan, track, and manage your agile projects with Kanban boards, backlog management, sprint planning, and team collaboration — all in one place.
 
-A full-featured agile project management tool inspired by Jira and Trello. Built with **Next.js 16**, **Mantine v9**, and **Zustand**.
+A full-featured agile project management tool inspired by Jira and Trello. Built with **Next.js 16**, **Mantine v9**, **Zustand**, and **MongoDB**.
 
 ---
 
@@ -39,6 +39,10 @@ A full-featured agile project management tool inspired by Jira and Trello. Built
 | **Charts** | [Recharts v3.8.1](https://recharts.org) + [@mantine/charts](https://mantine.dev/charts/) | Gantt, burndown, velocity charts |
 | **Dates** | [dayjs v1.11.21](https://day.js.org) + [@mantine/dates](https://mantine.dev/dates/) | Date pickers, formatting |
 | **Icons** | [@tabler/icons-react](https://tabler-icons.io) | UI icons (2,500+ line icons) |
+| **Toasts** | [react-hot-toast](https://react-hot-toast.com) | Global toast notifications |
+| **Database** | [MongoDB 8](https://www.mongodb.com) (Docker) | Document store |
+| **GUI** | [Mongo Express](https://github.com/mongo-express/mongo-express) | Web-based MongoDB admin |
+| **Container** | [Docker](https://www.docker.com) + Compose | Local dev environment |
 | **Real-time** | Socket.io (future) | Live collaboration, presence |
 | **Design** | [Material Design 3](https://m3.material.io) (Material You) | Design system, color tokens, typography |
 
@@ -53,6 +57,7 @@ src/
 ├── app/                          # Next.js App Router pages
 │   ├── layout.tsx                # Root layout with AppShell + MantineProvider
 │   ├── page.tsx                  # "For you" dashboard
+│   ├── not-found.tsx             # Custom 404 page
 │   ├── globals.css               # Tailwind + custom theme
 │   ├── projects/                 # Project routes
 │   │   ├── page.tsx              # Browse all projects
@@ -66,14 +71,15 @@ src/
 │       └── page.tsx              # Global issues list (across projects)
 ├── components/
 │   ├── layout/                   # Shell components
-│   │   ├── AppShell.tsx          # Mantine AppShell + provider + theme
+│   │   ├── AppShell.tsx          # Mantine AppShell + provider + theme + toaster
 │   │   ├── TopBar.tsx            # Logo, search, create, notifications, user
 │   │   ├── Sidebar.tsx           # Collapsible zoned sidebar (Jira-style)
 │   │   └── ProjectNav.tsx        # Horizontal project tabs (Board/List/Timeline/...)
 │   ├── ui/                       # Small reusable UI
-│   │   ├── UserMenu.tsx
-│   │   ├── NotificationBell.tsx
-│   │   └── CreateButton.tsx
+│   │   ├── UserMenu.tsx          # Avatar dropdown (profile, settings, logout)
+│   │   ├── NotificationBell.tsx  # Bell icon with unread count indicator
+│   │   ├── CreateButton.tsx      # "Create" dropdown (issue, task, sprint)
+│   │   └── ToasterProvider.tsx   # Global react-hot-toast configuration
 │   ├── board/                    # Board-specific components
 │   ├── issue/                    # Issue-specific components
 │   └── project/                  # Project-specific components
@@ -100,9 +106,7 @@ src/
 ```
 User Action → React Component → Zustand Store → [Re-render]
                                       ↓
-                                API Routes (future)
-                                      ↓
-                                Database (future)
+                                API Routes (future) → MongoDB
 ```
 
 Zustand stores are the single source of truth. Components read from stores via selectors and trigger actions. No prop drilling beyond 2 levels.
@@ -113,10 +117,21 @@ Zustand stores are the single source of truth. Components read from stores via s
 
 ### Prerequisites
 
-- **Node.js** ≥ 20
-- **pnpm** ≥ 9
+- **Docker** & **Docker Compose** (recommended)
+- Or **Node.js** ≥ 20 + **pnpm** ≥ 9
 
-### Installation
+### Installation (Docker)
+
+```bash
+git clone <repo-url>
+cd project-management-platform-msc
+docker compose up -d
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.  
+Access Mongo Express at [http://localhost:8081](http://localhost:8081) (login: `admin` / `admin`).
+
+### Installation (Local)
 
 ```bash
 git clone <repo-url>
@@ -125,7 +140,7 @@ pnpm install
 pnpm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
 ### Available Scripts
 
@@ -135,12 +150,16 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `pnpm run build` | Production build |
 | `pnpm run start` | Start production server |
 | `pnpm run lint` | Run ESLint |
+| `docker compose up -d` | Start full stack (app + MongoDB + Mongo Express) |
+| `docker compose down` | Stop all containers |
+| `docker compose down -v` | Stop and delete volumes (clears DB) |
+| `docker compose logs -f` | Follow container logs |
 
 ---
 
 ## Roadmap
 
-### Release 0.1 — App Shell (Current)
+### Release 0.1 — App Shell ✅
 
 - [x] Next.js 16 + Mantine v9 + Tailwind v4 + Zustand scaffold
 - [x] MantineProvider with light/dark theme
@@ -148,10 +167,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - [x] Material Design 3 design tokens integrated
 - [x] Jira-style collapsible sidebar layout
 - [x] Global search, create button, notifications, user menu
-- [ ] Project navigation with horizontal tabs (Board/List/Timeline/Settings)
-- [ ] "For you" dashboard page
-- [ ] Projects list page
-- [ ] Route placeholders for all project views
+- [x] Project navigation with horizontal tabs (Board/List/Timeline/Settings)
+- [x] "For you" dashboard page
+- [x] Projects list page
+- [x] Route placeholders for all project views
+- [x] Custom 404 not-found page
+- [x] Global toast notifications (react-hot-toast)
+- [x] Docker Compose setup with MongoDB 8 + Mongo Express
+- [x] Hot-reload volume mounts (no rebuild on source changes)
 
 ### Release 0.2 — Team & Project Management
 
@@ -244,6 +267,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | **Responsive Design** | Collapsible sidebar; adaptive grid; mobile-first breakpoints |
 | **TypeScript** | Strict mode; interface-first types; discriminated unions for issue states |
 | **API Design** | RESTful route patterns for projects, issues, and nested resources |
+| **Containerization** | Docker Compose with MongoDB 8, Mongo Express, persistent volumes, shared network |
 
 ---
 
@@ -256,6 +280,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `next.config.ts` | Next.js configuration |
 | `postcss.config.cjs` | PostCSS with Mantine preset + Tailwind |
 | `tsconfig.json` | TypeScript config with `@/*` path alias |
+| `Dockerfile` | Node 22 (LTS) Alpine, pnpm install, dev command |
+| `docker-compose.yml` | App + MongoDB 8 + Mongo Express on shared network |
 | `AGENTS.md` | AI coding agent guidelines |
 | `DESIGN.md` | Material Design 3 design system reference |
 
