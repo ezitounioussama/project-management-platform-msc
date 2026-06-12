@@ -13,8 +13,16 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URI=mongodb://mongo:27017/scrumboard
+      - SOCKET_SERVER_URL=http://socket-server:3001
+      - MAILPIT_HOST=mailpit
+      - MAILPIT_SMTP_PORT=1025
+      - MAILPIT_API_PORT=8025
     depends_on:
       mongo:
+        condition: service_started
+      mailpit:
+        condition: service_started
+      socket-server:
         condition: service_started
     networks:
       - scrumboard-network
@@ -44,6 +52,33 @@ services:
     depends_on:
       mongo:
         condition: service_started
+    networks:
+      - scrumboard-network
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: scrumboard-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - scrumboard-network
+    restart: unless-stopped
+
+  socket-server:
+    build:
+      context: ./socket-server
+      dockerfile: Dockerfile
+    container_name: scrumboard-socket-server
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=development
+    volumes:
+      - ./socket-server:/app
+      - /app/node_modules
     networks:
       - scrumboard-network
     restart: unless-stopped

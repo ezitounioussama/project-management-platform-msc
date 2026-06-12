@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
+import crypto from 'node:crypto';
 import { connectToDatabase } from '@/lib/mongodb';
 import { requireAuth, requireTeamRole } from '@/lib/auth';
 import { Invitation } from '@/models/Invitation';
 import { Team } from '@/models/Team';
+import { Notification } from '@/models/Notification';
+import { sendMail } from '@/lib/email';
+import { invitationEmail } from '@/lib/email-templates';
+import { clerkClient } from '@clerk/nextjs/server';
+import { emitToUser } from '@/lib/socket-server';
 
 export async function GET(request: Request) {
   try {
@@ -11,6 +17,19 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const teamId = url.searchParams.get('teamId');
+    const token = url.searchParams.get('token');
+
+    if (token) {
+      const invitation = await Invitation.findOne({ token });
+      if (!invitation) {
+        return NextResponse.json({ error: 'Invitation not found' }, { status: 404 });
+      }
+      const team = await Team.findById(invitation.teamId);
+      return NextResponse.json({
+        invitation,
+        team: team ? { _id: team._id, name: team.name } : null,
+      });
+    }
 
     const filter: Record<string, unknown> = {};
     if (teamId) {
@@ -60,12 +79,70 @@ export async function POST(request: Request) {
       );
     }
 
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+    }
+
+    const token = crypto.randomUUID();
     const invitation = await Invitation.create({
       teamId,
       email: email.trim().toLowerCase(),
       role: role ?? 'member',
+      token,
       invitedBy: userId,
     });
+
+    const client = await clerkClient();
+    let inviterName = 'Someone';
+    try {
+      const inviter = await client.users.getUser(userId);
+      inviterName = inviter.fullName ?? inviter.primaryEmailAddress?.emailAddress ?? 'Someone';
+    } catch {
+      // fallback
+    }
+
+    const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invitations/accept/${token}`;
+
+    try {
+      await sendMail({
+        to: email.trim(),
+        subject: `You're invited to join ${team.name} on Scrumboard`,
+        html: invitationEmail({
+          inviterName,
+          teamName: team.name,
+          role: invitation.role,
+          acceptUrl,
+        }),
+      });
+    } catch {
+      // email failure shouldn't block invitation creation
+    }
+
+    try {
+      const users = await client.users.getUserList({ emailAddress: [email.trim()] });
+      if (users.data.length > 0) {
+        const invitedUser = users.data[0];
+        const notif = await Notification.create({
+          userId: invitedUser.id,
+          type: 'invitation_received',
+          title: `Invitation to join ${team.name}`,
+          message: `${inviterName} invited you as ${invitation.role}`,
+          link: acceptUrl,
+        });
+        await emitToUser(invitedUser.id, 'notification:new', {
+          _id: notif._id,
+          type: notif.type,
+          title: notif.title,
+          message: notif.message,
+          link: notif.link,
+          read: false,
+          createdAt: notif.createdAt,
+        });
+      }
+    } catch {
+      // notification failure shouldn't block
+    }
 
     return NextResponse.json(invitation, { status: 201 });
   } catch (error) {
@@ -123,6 +200,28 @@ export async function PUT(request: Request) {
         joinedAt: new Date(),
       });
       await team.save();
+
+      const client = await clerkClient();
+      const newMember = await client.users.getUser(userId);
+      const newMemberName = newMember.fullName ?? newMember.primaryEmailAddress?.emailAddress ?? 'Someone';
+
+      for (const member of team.members) {
+        if (member.userId === userId) continue;
+        const notif = await Notification.create({
+          userId: member.userId,
+          type: 'member_joined',
+          title: `${newMemberName} joined ${team.name}`,
+          message: `Joined as ${invitation.role}`,
+        });
+        await emitToUser(member.userId, 'notification:new', {
+          _id: notif._id,
+          type: notif.type,
+          title: notif.title,
+          message: notif.message,
+          read: false,
+          createdAt: notif.createdAt,
+        });
+      }
     }
 
     return NextResponse.json(invitation);

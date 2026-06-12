@@ -6,6 +6,7 @@ export interface InvitationDocument extends Document {
   email: string;
   role: TeamRole;
   status: 'pending' | 'accepted' | 'declined' | 'cancelled';
+  token: string;
   invitedBy: string;
   createdAt: Date;
   updatedAt: Date;
@@ -21,12 +22,14 @@ const invitationSchema = new Schema<InvitationDocument>(
       enum: ['pending', 'accepted', 'declined', 'cancelled'],
       default: 'pending',
     },
+    token: { type: String, required: true, unique: true },
     invitedBy: { type: String, required: true },
   },
   { timestamps: true }
 );
 
 invitationSchema.index({ teamId: 1, email: 1 });
+invitationSchema.index({ token: 1 });
 
 export const Invitation: Model<InvitationDocument> =
   mongoose.models.Invitation ?? mongoose.model<InvitationDocument>('Invitation', invitationSchema);

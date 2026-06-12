@@ -22,27 +22,17 @@ const columns: { id: IssueStatus; label: string }[] = [
   { id: 'cancelled', label: 'Cancelled' },
 ];
 
-const mockIssues: Record<IssueStatus, Issue[]> = {
-  backlog: [
-    { id: '1', key: 'PROJ-1', title: 'Set up CI pipeline', description: '', status: 'backlog', priority: 'high', assigneeId: null, reporterId: '1', projectId: '1', parentId: null, storyPoints: 3, dueDate: null, labels: [], createdAt: '', updatedAt: '' },
-    { id: '2', key: 'PROJ-2', title: 'Design system audit', description: '', status: 'backlog', priority: 'medium', assigneeId: 'u1', reporterId: '1', projectId: '1', parentId: null, storyPoints: 5, dueDate: null, labels: [], createdAt: '', updatedAt: '' },
-  ],
-  todo: [
-    { id: '3', key: 'PROJ-3', title: 'Implement user authentication', description: '', status: 'todo', priority: 'highest', assigneeId: 'u2', reporterId: '1', projectId: '1', parentId: null, storyPoints: 8, dueDate: null, labels: [], createdAt: '', updatedAt: '' },
-    { id: '4', key: 'PROJ-4', title: 'Create API endpoints', description: '', status: 'todo', priority: 'high', assigneeId: null, reporterId: '1', projectId: '1', parentId: null, storyPoints: 13, dueDate: null, labels: [], createdAt: '', updatedAt: '' },
-  ],
-  in_progress: [
-    { id: '5', key: 'PROJ-5', title: 'Build dashboard layout', description: '', status: 'in_progress', priority: 'high', assigneeId: 'u1', reporterId: '1', projectId: '1', parentId: null, storyPoints: 5, dueDate: null, labels: [], createdAt: '', updatedAt: '' },
-  ],
-  done: [
-    { id: '6', key: 'PROJ-6', title: 'Project scaffolding', description: '', status: 'done', priority: 'medium', assigneeId: 'u1', reporterId: '1', projectId: '1', parentId: null, storyPoints: 2, dueDate: null, labels: [], createdAt: '', updatedAt: '' },
-  ],
+const emptyIssues: Record<IssueStatus, Issue[]> = {
+  backlog: [],
+  todo: [],
+  in_progress: [],
+  done: [],
   cancelled: [],
 };
 
 export default function BoardPage() {
   const params = useParams<{ projectId: string }>();
-  const [issues, setIssues] = useState<Record<IssueStatus, Issue[]>>(mockIssues);
+  const [issues, setIssues] = useState<Record<IssueStatus, Issue[]>>(emptyIssues);
 
   function handleDragEnd(event: DragEndEvent) {
     if (event.canceled) return;
