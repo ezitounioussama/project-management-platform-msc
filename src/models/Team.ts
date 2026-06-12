@@ -18,8 +18,8 @@ export interface TeamDocument extends Document {
 
 const teamMemberSchema = new Schema({
   userId: { type: String, required: true },
-  email: { type: String, required: true },
-  name: { type: String, required: true },
+  email: { type: String, default: '' },
+  name: { type: String, default: 'Unknown' },
   role: { type: String, enum: ['admin', 'member', 'viewer'], default: 'member' },
   joinedAt: { type: Date, default: Date.now },
 });

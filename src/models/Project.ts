@@ -18,7 +18,7 @@ const projectSchema = new Schema<ProjectDocument>(
     key: { type: String, required: true, trim: true, uppercase: true },
     description: { type: String, default: '' },
     color: { type: String, default: 'blue' },
-    teamId: { type: String, required: true },
+    teamId: { type: String, required: false, default: '' },
     leadId: { type: String, required: true },
     status: { type: String, enum: ['active', 'archived'], default: 'active' },
   },

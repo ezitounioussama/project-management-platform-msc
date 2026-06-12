@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { requireAuth, requireTeamRole } from '@/lib/auth';
 import { Project } from '@/models/Project';
+import { Team } from '@/models/Team';
+import { clerkClient } from '@clerk/nextjs/server';
 
 export async function GET(request: Request) {
   try {
@@ -29,13 +31,37 @@ export async function POST(request: Request) {
     await connectToDatabase();
 
     const body = await request.json();
-    const { name, key, description, color, teamId } = body;
+    const { name, key, description, color } = body;
+    let { teamId } = body;
 
-    if (!name?.trim() || !key?.trim() || !teamId) {
+    if (!name?.trim() || !key?.trim()) {
       return NextResponse.json(
-        { error: 'Name, key, and teamId are required' },
+        { error: 'Name and key are required' },
         { status: 400 }
       );
+    }
+
+    if (!teamId) {
+      const client = await clerkClient();
+      const clerkUser = await client.users.getUser(userId);
+      const userEmail = clerkUser.primaryEmailAddress?.emailAddress ?? '';
+      const userName = clerkUser.fullName ?? userEmail;
+
+      let personalTeam = await Team.findOne({
+        ownerId: userId,
+        name: 'Personal',
+      });
+
+      if (!personalTeam) {
+        personalTeam = await Team.create({
+          name: 'Personal',
+          description: 'Personal projects',
+          ownerId: userId,
+          members: [{ userId, email: userEmail, name: userName, role: 'admin' }],
+        });
+      }
+
+      teamId = personalTeam._id.toString();
     }
 
     await requireTeamRole(teamId, ['admin', 'member'], userId);

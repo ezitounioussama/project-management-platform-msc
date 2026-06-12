@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { requireAuth } from '@/lib/auth';
 import { Team } from '@/models/Team';
+import { clerkClient } from '@clerk/nextjs/server';
 
 export async function GET() {
   try {
@@ -32,6 +33,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
+    const client = await clerkClient();
+    const clerkUser = await client.users.getUser(userId);
+    const userEmail = clerkUser.primaryEmailAddress?.emailAddress ?? '';
+    const userName = clerkUser.fullName ?? userEmail;
+
     const team = await Team.create({
       name: name.trim(),
       description: description?.trim() ?? '',
@@ -39,8 +45,8 @@ export async function POST(request: Request) {
       members: [
         {
           userId,
-          email: body.email ?? '',
-          name: body.userName ?? 'Unknown',
+          email: userEmail,
+          name: userName,
           role: 'admin',
           joinedAt: new Date(),
         },
