@@ -8,6 +8,7 @@ import {
 import type { DragEndEvent } from '@dnd-kit/react';
 import { move } from '@dnd-kit/helpers';
 import { Group, Title, Text, Stack } from '@mantine/core';
+import { useParams } from 'next/navigation';
 import { ProjectNav } from '@/components/layout/ProjectNav';
 import { KanbanColumn } from '@/components/board/KanbanColumn';
 import KanbanCard from '@/components/board/KanbanCard';
@@ -39,7 +40,8 @@ const mockIssues: Record<IssueStatus, Issue[]> = {
   cancelled: [],
 };
 
-export default function BoardPage({ params }: { params: { projectId: string } }) {
+export default function BoardPage() {
+  const params = useParams<{ projectId: string }>();
   const [issues, setIssues] = useState<Record<IssueStatus, Issue[]>>(mockIssues);
 
   function handleDragEnd(event: DragEndEvent) {

@@ -1,9 +1,12 @@
 'use client';
 
 import { Stack, Title, Text } from '@mantine/core';
+import { useParams } from 'next/navigation';
 import { ProjectNav } from '@/components/layout/ProjectNav';
 
-export default function ListPage({ params }: { params: { projectId: string } }) {
+export default function ListPage() {
+  const params = useParams<{ projectId: string }>();
+
   return (
     <Stack p="lg" gap="md">
       <ProjectNav projectId={params.projectId} />

@@ -1,5 +1,7 @@
+import { use } from 'react';
 import { redirect } from 'next/navigation';
 
-export default function ProjectHome({ params }: { params: { projectId: string } }) {
-  redirect(`/projects/${params.projectId}/board`);
+export default function ProjectHome({ params }: { params: Promise<{ projectId: string }> }) {
+  const { projectId } = use(params);
+  redirect(`/projects/${projectId}/board`);
 }

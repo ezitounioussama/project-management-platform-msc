@@ -8,6 +8,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { IconPlus, IconTrash, IconMail, IconUsers } from '@tabler/icons-react';
 import { ProjectNav } from '@/components/layout/ProjectNav';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import type { TeamMember, TeamRole } from '@/types/team';
@@ -23,7 +24,8 @@ interface ProjectData {
   status: string;
 }
 
-export default function SettingsPage({ params }: { params: { projectId: string } }) {
+export default function SettingsPage() {
+  const params = useParams<{ projectId: string }>();
   const [project, setProject] = useState<ProjectData | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
