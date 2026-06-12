@@ -9,14 +9,15 @@ Project Management Platform (Mini Jira/Trello clone). A full-featured agile proj
 | Layer | Technology |
 |-------|-----------|
 | Framework | Next.js 16.2.9 (App Router) |
+| Auth | Clerk (managed auth, no mock user) |
 | UI Library | Mantine v9.3.1 |
 | CSS | Tailwind CSS v4.3.0 + PostCSS |
-| State Management | Zustand v5.0.14 |
+| State Management | Zustand v5.0.14 (color scheme, sidebar) |
 | Charts | Recharts v3.8.1 + @mantine/charts |
 | Dates | dayjs v1.11.21 + @mantine/dates |
 | Icons | @tabler/icons-react |
 | Toasts | react-hot-toast |
-| Database | MongoDB 8 (Docker) |
+| Database | MongoDB 8 via Mongoose 9 |
 | GUI | Mongo Express (Docker) |
 | Container | Docker + Compose |
 | Real-time | Socket.io (future) |
@@ -26,20 +27,31 @@ Project Management Platform (Mini Jira/Trello clone). A full-featured agile proj
 ```
 src/
 ├── app/                          # Next.js App Router pages
-│   ├── layout.tsx                # Root layout with AppShell + MantineProvider
+│   ├── layout.tsx                # Root layout with ClerkProvider + AppShell
 │   ├── page.tsx                  # "For you" dashboard
 │   ├── not-found.tsx             # Custom 404 page
 │   ├── globals.css               # Tailwind + custom theme
+│   ├── sign-in/[[...sign-in]]/page.tsx  # Clerk sign-in
+│   ├── sign-up/[[...sign-up]]/page.tsx  # Clerk sign-up
 │   ├── projects/
-│   │   ├── page.tsx              # Browse all projects
+│   │   ├── page.tsx              # Browse all projects (API-fetched)
 │   │   └── [projectId]/
 │   │       ├── page.tsx          # Project home (redirects)
 │   │       ├── board/page.tsx    # Kanban board
 │   │       ├── list/page.tsx     # List view
 │   │       ├── timeline/page.tsx # Timeline/Gantt
-│   │       └── settings/page.tsx # Project settings
+│   │       └── settings/page.tsx # Project settings + team members
+│   ├── teams/
+│   │   ├── page.tsx              # Team listing + create
+│   │   └── [teamId]/page.tsx     # Team detail + member management
 │   └── issues/
 │       └── page.tsx              # Global issues list
+├── api/                          # Next.js API routes
+│   ├── teams/route.ts            # Team CRUD
+│   ├── projects/route.ts         # Project CRUD
+│   ├── invitations/route.ts      # Team invitations
+│   └── users/route.ts            # Team member management
+├── middleware.ts                 # Clerk middleware (route protection)
 ├── components/
 │   ├── layout/                   # Shell components
 │   │   ├── AppShell.tsx
@@ -57,19 +69,24 @@ src/
 ├── store/                        # Zustand stores
 │   ├── auth-store.ts
 │   └── app-store.ts
+├── models/                       # Mongoose models
+│   ├── Team.ts
+│   ├── Project.ts
+│   └── Invitation.ts
 ├── types/                        # TypeScript interfaces
 │   ├── user.ts
 │   ├── project.ts
 │   ├── issue.ts
+│   ├── team.ts
 │   └── common.ts
 ├── constants/                    # Static data & config
 │   ├── navigation.ts
 │   └── index.ts
 ├── hooks/                        # Custom React hooks
 │   └── use-current-user.ts
-├── lib/                          # Business logic, API clients
-└── utils/                        # Pure utility functions
-    └── index.ts
+└── lib/                          # Business logic, API clients
+    ├── mongodb.ts
+    └── auth.ts
 ```
 
 ## Coding Conventions
@@ -90,14 +107,15 @@ src/
 
 ### Imports Order
 1. React / Next.js
-2. Third-party libraries (Mantine, zustand, dayjs, recharts)
+2. Third-party libraries (Mantine, Clerk, zustand, dayjs, recharts, mongoose)
 3. Types (`@/types/...`)
-4. Store (`@/store/...`)
-5. Components (`@/components/...`)
-6. Hooks (`@/hooks/...`)
-7. Constants (`@/constants/...`)
-8. Utils (`@/utils/...`)
-9. CSS imports last
+4. Models (`@/models/...`)
+5. Store (`@/store/...`)
+6. Components (`@/components/...`)
+7. Hooks (`@/hooks/...`)
+8. Constants (`@/constants/...`)
+9. Lib (`@/lib/...`)
+10. CSS imports last
 
 ### State Management
 - **Zustand** for global state (auth, app UI state).

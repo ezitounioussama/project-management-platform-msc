@@ -1,12 +1,15 @@
 'use client';
 
-import { AppShell, Group, TextInput, Avatar } from '@mantine/core';
+import { AppShell, Group, TextInput, Avatar, Button } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
+import { useUser, SignInButton } from '@clerk/nextjs';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { CreateButton } from '@/components/ui/CreateButton';
 import { UserMenu } from '@/components/ui/UserMenu';
 
 export function TopBar() {
+  const { isSignedIn, isLoaded } = useUser();
+
   return (
     <AppShell.Header>
       <Group h="100%" px="md" justify="space-between">
@@ -24,9 +27,17 @@ export function TopBar() {
         </Group>
 
         <Group gap="sm">
-          <CreateButton />
-          <NotificationBell />
-          <UserMenu />
+          {isLoaded && !isSignedIn ? (
+            <SignInButton mode="modal">
+              <Button size="sm" variant="light">Sign in</Button>
+            </SignInButton>
+          ) : (
+            <>
+              <CreateButton />
+              <NotificationBell />
+              <UserMenu />
+            </>
+          )}
         </Group>
       </Group>
     </AppShell.Header>

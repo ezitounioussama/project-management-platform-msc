@@ -3,13 +3,13 @@
 import { AppShell, NavLink, ScrollArea, ActionIcon, Group, Text } from '@mantine/core';
 import {
   IconStar,
-  IconLayoutDashboard,
   IconFolder,
   IconListDetails,
   IconColumns3,
   IconFilter,
   IconChevronLeft,
   IconChevronRight,
+  IconUsers,
 } from '@tabler/icons-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -18,8 +18,8 @@ import { useAppStore } from '@/store/app-store';
 
 const iconMap: Record<string, React.ElementType> = {
   IconStar,
-  IconLayoutDashboard,
   IconFolder,
+  IconUsers,
   IconListDetails,
   IconColumns3,
   IconFilter,

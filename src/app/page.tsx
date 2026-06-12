@@ -2,6 +2,7 @@
 
 import { Group, Stack, Title, Text, Paper, SimpleGrid } from '@mantine/core';
 import { IconStar, IconClock, IconUsers, IconChecklist } from '@tabler/icons-react';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 const stats = [
   { label: 'Assigned to me', value: '12', icon: IconChecklist, color: 'blue' },
@@ -11,10 +12,14 @@ const stats = [
 ];
 
 export default function HomePage() {
+  const { user, isLoaded } = useCurrentUser();
+
   return (
     <Stack p="lg" gap="lg">
       <Title order={2}>For you</Title>
-      <Text c="dimmed">Welcome back, Alex. Here is your overview.</Text>
+      <Text c="dimmed">
+        Welcome back, {isLoaded && user ? user.name : '...'}. Here is your overview.
+      </Text>
 
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
         {stats.map((stat) => (

@@ -2,8 +2,8 @@ import type { NavItem, ProjectTab } from '@/types/common';
 
 export const sidebarItems: NavItem[] = [
   { label: 'For you', icon: 'IconStar', href: '/' },
-  { label: 'Dashboard', icon: 'IconLayoutDashboard', href: '/dashboard' },
   { label: 'Projects', icon: 'IconFolder', href: '/projects' },
+  { label: 'Teams', icon: 'IconUsers', href: '/teams' },
   { label: 'Issues', icon: 'IconListDetails', href: '/issues' },
   { label: 'Boards', icon: 'IconColumns3', href: '/boards' },
   { label: 'Filters', icon: 'IconFilter', href: '/filters' },
