@@ -1,8 +1,7 @@
 'use client';
 
-import { AppShell, Group, TextInput, ActionIcon, Avatar } from '@mantine/core';
+import { AppShell, Group, TextInput, Avatar } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
-import { APP_NAME } from '@/constants';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { CreateButton } from '@/components/ui/CreateButton';
 import { UserMenu } from '@/components/ui/UserMenu';

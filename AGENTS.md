@@ -8,8 +8,8 @@ Project Management Platform (Mini Jira/Trello clone). A full-featured agile proj
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Next.js 16.2.7 (App Router) |
-| UI Library | Mantine v9.3.0 |
+| Framework | Next.js 16.2.9 (App Router) |
+| UI Library | Mantine v9.3.1 |
 | CSS | Tailwind CSS v4.3.0 + PostCSS |
 | State Management | Zustand v5.0.14 |
 | Charts | Recharts v3.8.1 + @mantine/charts |
