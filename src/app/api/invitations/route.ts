@@ -8,7 +8,6 @@ import { Notification } from '@/models/Notification';
 import { sendMail } from '@/lib/email';
 import { invitationEmail } from '@/lib/email-templates';
 import { clerkClient } from '@clerk/nextjs/server';
-import { emitToUser } from '@/lib/socket-server';
 
 export async function GET(request: Request) {
   try {
@@ -123,21 +122,12 @@ export async function POST(request: Request) {
       const users = await client.users.getUserList({ emailAddress: [email.trim()] });
       if (users.data.length > 0) {
         const invitedUser = users.data[0];
-        const notif = await Notification.create({
+        await Notification.create({
           userId: invitedUser.id,
           type: 'invitation_received',
           title: `Invitation to join ${team.name}`,
           message: `${inviterName} invited you as ${invitation.role}`,
           link: acceptUrl,
-        });
-        await emitToUser(invitedUser.id, 'notification:new', {
-          _id: notif._id,
-          type: notif.type,
-          title: notif.title,
-          message: notif.message,
-          link: notif.link,
-          read: false,
-          createdAt: notif.createdAt,
         });
       }
     } catch {
@@ -207,19 +197,11 @@ export async function PUT(request: Request) {
 
       for (const member of team.members) {
         if (member.userId === userId) continue;
-        const notif = await Notification.create({
+        await Notification.create({
           userId: member.userId,
           type: 'member_joined',
           title: `${newMemberName} joined ${team.name}`,
           message: `Joined as ${invitation.role}`,
-        });
-        await emitToUser(member.userId, 'notification:new', {
-          _id: notif._id,
-          type: notif.type,
-          title: notif.title,
-          message: notif.message,
-          read: false,
-          createdAt: notif.createdAt,
         });
       }
     }

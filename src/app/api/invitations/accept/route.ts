@@ -5,7 +5,6 @@ import { Invitation } from '@/models/Invitation';
 import { Team } from '@/models/Team';
 import { Notification } from '@/models/Notification';
 import { clerkClient } from '@clerk/nextjs/server';
-import { emitToUser } from '@/lib/socket-server';
 
 export async function POST(request: Request) {
   try {
@@ -55,19 +54,11 @@ export async function POST(request: Request) {
 
     for (const member of team.members) {
       if (member.userId === userId) continue;
-      const notif = await Notification.create({
+      await Notification.create({
         userId: member.userId,
         type: 'member_joined',
         title: `${userName} joined ${team.name}`,
         message: `Joined as ${invitation.role}`,
-      });
-      await emitToUser(member.userId, 'notification:new', {
-        _id: notif._id,
-        type: notif.type,
-        title: notif.title,
-        message: notif.message,
-        read: false,
-        createdAt: notif.createdAt,
       });
     }
 
