@@ -6,6 +6,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconPlus, IconBug, IconChecklist, IconBookmark, IconUsers, IconFolder } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { useAppStore } from '@/store/app-store';
 
 export function CreateButton() {
   const [menuOpened, setMenuOpened] = useState(false);
@@ -17,6 +18,7 @@ export function CreateButton() {
   const [projectKey, setProjectKey] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const setActiveProjectId = useAppStore((s) => s.setActiveProjectId);
 
   async function handleCreateTeam() {
     if (!teamName.trim()) return;
@@ -56,6 +58,7 @@ export function CreateButton() {
       closeProject();
       setProjectName('');
       setProjectKey('');
+      setActiveProjectId(project._id);
       router.push(`/projects/${project._id}/board`);
     } catch {
       toast.error('Failed to create project');

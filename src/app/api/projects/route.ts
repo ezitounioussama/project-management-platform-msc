@@ -59,12 +59,18 @@ export async function POST(request: Request) {
           ownerId: userId,
           members: [{ userId, email: userEmail, name: userName, role: 'admin' }],
         });
+      } else {
+        const isMember = personalTeam.members.some((m) => m.userId === userId);
+        if (!isMember) {
+          personalTeam.members.push({ userId, email: userEmail, name: userName, role: 'admin', joinedAt: new Date() });
+          await personalTeam.save();
+        }
       }
 
       teamId = personalTeam._id.toString();
+    } else {
+      await requireTeamRole(teamId, ['admin', 'member'], userId);
     }
-
-    await requireTeamRole(teamId, ['admin', 'member'], userId);
 
     const project = await Project.create({
       name: name.trim(),

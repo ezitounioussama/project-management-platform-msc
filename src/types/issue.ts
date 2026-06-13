@@ -2,8 +2,16 @@ export type IssuePriority = 'highest' | 'high' | 'medium' | 'low' | 'lowest';
 
 export type IssueStatus = 'backlog' | 'todo' | 'in_progress' | 'done' | 'cancelled';
 
+export interface IssueComment {
+  userId: string;
+  userName: string;
+  body: string;
+  createdAt: string;
+}
+
 export interface Issue {
-  id: string;
+  _id: string;
+  projectId: string;
   key: string;
   title: string;
   description: string;
@@ -11,11 +19,12 @@ export interface Issue {
   priority: IssuePriority;
   assigneeId: string | null;
   reporterId: string;
-  projectId: string;
+  reporterEmail?: string;
+  labels: string[];
   parentId: string | null;
   storyPoints: number | null;
   dueDate: string | null;
-  labels: string[];
+  comments: IssueComment[];
   createdAt: string;
   updatedAt: string;
 }

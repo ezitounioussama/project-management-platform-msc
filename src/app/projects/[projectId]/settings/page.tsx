@@ -8,7 +8,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { IconPlus, IconTrash, IconMail, IconUsers } from '@tabler/icons-react';
 import { ProjectNav } from '@/components/layout/ProjectNav';
-import { useParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import type { TeamMember, TeamRole } from '@/types/team';
@@ -25,7 +25,12 @@ interface ProjectData {
 }
 
 export default function SettingsPage() {
-  const params = useParams<{ projectId: string }>();
+  const pathname = usePathname();
+  const projectId = pathname.split('/')[2];
+  return <SettingsContent key={projectId} projectId={projectId} />;
+}
+
+function SettingsContent({ projectId }: { projectId: string }) {
   const [project, setProject] = useState<ProjectData | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +46,7 @@ export default function SettingsPage() {
       try {
         const res = await fetch('/api/projects');
         const projects = await res.json();
-        const proj = projects.find((p: ProjectData) => p._id === params.projectId);
+        const proj = projects.find((p: ProjectData) => p._id === projectId);
         if (proj) {
           setProject(proj);
           setName(proj.name);
@@ -58,7 +63,7 @@ export default function SettingsPage() {
       }
     }
     load();
-  }, [params.projectId]);
+  }, [projectId]);
 
   async function handleSave() {
     setSaving(true);
@@ -66,7 +71,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/projects', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: params.projectId, name, description }),
+        body: JSON.stringify({ id: projectId, name, description }),
       });
       if (!res.ok) throw new Error('Failed to update');
       toast.success('Project updated');
@@ -117,7 +122,7 @@ export default function SettingsPage() {
 
   return (
     <Stack p="lg" gap="md">
-      <ProjectNav projectId={params.projectId} />
+      <ProjectNav projectId={projectId} />
       <Title order={3}>Settings</Title>
 
       <Paper p="md" withBorder radius="md">
