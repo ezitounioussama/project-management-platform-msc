@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   ActionIcon, Indicator, Popover, Stack, Text, Button,
   Group, Anchor, Box,
 } from '@mantine/core';
 import { IconBell, IconCheck } from '@tabler/icons-react';
-import { useSocket } from '@/hooks/use-socket';
 import { useUser } from '@clerk/nextjs';
 
 interface NotificationItem {
@@ -21,30 +20,50 @@ interface NotificationItem {
 
 export function NotificationBell() {
   const { user } = useUser();
-  const { on } = useSocket();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
+
     fetch('/api/notifications')
       .then((r) => r.json())
       .then((data) => {
-        setNotifications(data.notifications ?? []);
+        const notifs: NotificationItem[] = data.notifications ?? [];
+        setNotifications(notifs);
         setUnreadCount(data.unreadCount ?? 0);
+
+        const latest = notifs.length > 0 ? notifs[0].createdAt : '';
+        const since = latest ? `?since=${encodeURIComponent(latest)}` : '';
+
+        const es = new EventSource(`/api/notifications/stream${since}`);
+
+        es.addEventListener('notification:new', (event) => {
+          const n: NotificationItem = JSON.parse(event.data);
+          setNotifications((prev) => [n, ...prev]);
+          setUnreadCount((prev) => prev + 1);
+        });
+
+        es.addEventListener('connected', (event) => {
+          console.log('[sse] connected', event.data);
+        });
+
+        es.addEventListener('heartbeat', () => {});
+
+        es.onerror = () => {
+          console.error('[sse] connection error, readyState:', es.readyState);
+        };
+
+        esRef.current = es;
       })
       .catch(() => {});
-  }, [user?.id]);
 
-  useEffect(() => {
-    if (!on) return;
-    const cleanup = on('notification:new', (data) => {
-      const notif = data as NotificationItem;
-      setNotifications((prev) => [notif, ...prev]);
-      setUnreadCount((prev) => prev + 1);
-    });
-    return cleanup;
-  }, [on]);
+    return () => {
+      esRef.current?.close();
+      esRef.current = null;
+    };
+  }, [user?.id]);
 
   async function markAllRead() {
     await fetch('/api/notifications', {
